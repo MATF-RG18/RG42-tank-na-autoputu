@@ -2,15 +2,6 @@
 #define CALLBACKFUNCTIONS_H
 
 /************************************
-    Struct init start here
-*************************************/
-
-struct gameState gs;
-struct Vector3f roadScale;
-struct Vector3f roadRotation;
-struct Vector3f roadTranslation;
-struct Tank tank;
-/************************************
     Functions declarations start here
 *************************************/
 

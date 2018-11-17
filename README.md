@@ -1,2 +1,2 @@
-# RG42-tank-na-autoputu
-Tank na autoputu
+# Crush_Them
+Computer Graphics university project done in C/OpenGL/Glut

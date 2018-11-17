@@ -18,7 +18,6 @@ int main(int argc, char** argv){
     glutDisplayFunc(onDisplay);
     glutReshapeFunc(onReshape);
     glutKeyboardFunc(onKeyboardInput);
-    //TODO ontimer
     // initialize stuff
     init();
 

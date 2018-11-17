@@ -5,17 +5,17 @@ LDFLAGS = -L/usr/X11R6/lib -L/usr/pkg/lib
 LDLIBS  = -lglut -lGLU -lGL
 
 $(PROGRAM): crush_them.o drawFunctions.o callbackFunctions.o
-	$(CC) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o $(LDLIBS) 
-
-crush_them.o: crush_them.c
-	$(CC) -c $(LDFLAGS) crush_them.c $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o $(LDLIBS) 
 
 drawFunctions.o: drawFunctions.c
-	$(CC) -c $(LDFLAGS) drawFunctions.c $(LDLIBS)
+	$(CC) $(CFLAGS) -c $(LDFLAGS) drawFunctions.c $(LDLIBS)
 
 callbackFunctions.o: callbackFunctions.c
-	$(CC) -c $(LDFLAGS) callbackFunctions.c $(LDLIBS)
+	$(CC) $(CFLAGS) -c $(LDFLAGS) callbackFunctions.c $(LDLIBS)
 
+crush_them.o: crush_them.c
+	$(CC) $(CFLAGS) -c $(LDFLAGS) crush_them.c $(LDLIBS)
+	
 .PHONY: beauty clean dist
 
 beauty:
