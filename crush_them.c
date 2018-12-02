@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "callbackFunctions.h"
 #include "drawFunctions.h"
-
+#include "lightingFunctions.h"
 int main(int argc, char** argv){
     
     //initialization of glut
@@ -19,8 +19,8 @@ int main(int argc, char** argv){
     glutReshapeFunc(onReshape);
     glutKeyboardFunc(onKeyboardInput);
     // initialize stuff
+    
     init();
-
     // start program
     glutMainLoop(); 
     return 0;

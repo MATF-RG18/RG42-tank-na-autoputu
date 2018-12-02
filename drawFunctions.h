@@ -9,10 +9,10 @@
 #define NOT_USED_VAR(X) (void)(X)
 
 // timer callback func variables
-#define timerID (0)
-#define timerID1 (1)
-#define timerID2 (2)
-#define timerID3 (3)
+#define carSpeedTimer (0)
+#define carSpawnTimer (1)
+#define tankMovementTimer (2)
+#define skyColorTimer (3)
 //end of timer callback func variables
 
 //Create game state.
@@ -48,25 +48,39 @@ struct Road{
     struct Vector3f roadRotation;
     struct Vector3f roadTranslation;
 };
+struct Sky{
+    struct Vector3f skyColor;
+    int dayTimer;
+    int flag;
+};
 //Keeps info about whole game state
 struct gameState{
     struct Car carArray[MAX_CARS_ALLOWED];
     struct Car car;
-    struct Road road;
-    struct Road road2;
-    struct Road road3;
+    struct Road road, road2, road3;
+    struct Sky sky;
+    //struct Road sideRoad, sideRoad2, sideRoad3;
     struct Tank tankMainPlayer;
     int WindowWidth;
     int WindowHeight;
     int actionOnGoing;
     float cameraMovement;
     int numberOfCrushes;
+    float lightModifier;
 };
 
 void init(void);
 void initRenderingObjects();
+void drawSquare();
 void drawRoad(const struct Road road);
 void drawCubeTank(const struct Tank tank);
 void drawCar(const struct Car cars);
 void drawSun();
+void tankInit();
+void roadInit();
+void skyInit();
+void carInit();
+void drawScore();
+//void rightSideRoadInit();
+//void drawSideRoad(const struct Road road);
 #endif

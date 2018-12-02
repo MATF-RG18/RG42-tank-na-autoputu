@@ -4,14 +4,17 @@ CFLAGS  = -g -std=c99 -Wall -Wextra -I/usr/X11R6/include -I/usr/pkg/include
 LDFLAGS = -L/usr/X11R6/lib -L/usr/pkg/lib
 LDLIBS  = -lglut -lGLU -lGL
 
-$(PROGRAM): crush_them.o drawFunctions.o callbackFunctions.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o $(LDLIBS) 
+$(PROGRAM): crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o $(LDLIBS) 
 
 drawFunctions.o: drawFunctions.c
 	$(CC) $(CFLAGS) -c $(LDFLAGS) drawFunctions.c $(LDLIBS)
 
 callbackFunctions.o: callbackFunctions.c
 	$(CC) $(CFLAGS) -c $(LDFLAGS) callbackFunctions.c $(LDLIBS)
+
+lightingFunctions.o: lightingFunctions.c
+	$(CC) $(CFLAGS) -c $(LDFLAGS) lightingFunctions.c $(LDLIBS)
 
 crush_them.o: crush_them.c
 	$(CC) $(CFLAGS) -c $(LDFLAGS) crush_them.c $(LDLIBS)
