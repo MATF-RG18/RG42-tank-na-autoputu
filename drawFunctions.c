@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include "image.h"
 
 /************************************
     Functions definitions start here
@@ -19,17 +20,90 @@ void init(void){
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
+
+/* Draw functions */
 void drawSun(){
     glPushMatrix();
         glLoadIdentity();
-        glTranslatef(20, 10, -30);
+        glRotatef(gs.sun.sunRotate.x, 1, 0, 0);
+        glRotatef(gs.sun.sunRotate.y, 0, 1, 0);
+        glRotatef(gs.sun.sunRotate.z, 0, 0, 1);
+        glTranslatef(gs.sun.sunTranslate.x, gs.sun.sunTranslate.y, gs.sun.sunTranslate.z);
         setVertexColor(1, 1, 0);
         glutSolidSphere(1, 50, 50);
     glPopMatrix();
 }
+void skyChangeFunction(){
+    if (gs.sun.sunRotate.z >= 360){ // instead of moduo 360
+        gs.sun.sunRotate.z = 0;
+    }
+    gs.sun.sunRotate.z += 0.30;   //TODO: fix math in code, this number is paper math
+    //Decerement until first reaches 0, that will be night color
+    if (gs.sky.flag == 0)
+    {
+        gs.sky.skyColor.x = (gs.sky.skyColor.x - 0.001);
+        gs.sky.skyColor.y = (gs.sky.skyColor.y - 0.001);
+        gs.sky.skyColor.z = (gs.sky.skyColor.z - 0.001);
+        if (gs.lightModifier < 0.4)
+            gs.lightModifier += 0.001;
+        if (gs.sky.skyColor.x < 0)
+            gs.sky.flag = 1;
+    }
+    if (gs.sky.flag == 1)
+    {
+        gs.sky.skyColor.x = (gs.sky.skyColor.x + 0.001);
+        gs.sky.skyColor.y = (gs.sky.skyColor.y + 0.001);
+        gs.sky.skyColor.z = (gs.sky.skyColor.z + 0.001);
+        if (gs.lightModifier > 0)
+            gs.lightModifier -= 0.001;
+        if (gs.sky.skyColor.x > 0.6)
+            gs.sky.flag = 0;
+    }
+    //Increment until u reach day.. (0.6, 0.8, 1, 0) <- day color
+    glClearColor(gs.sky.skyColor.x, gs.sky.skyColor.y, gs.sky.skyColor.z, 0);
+    
+
+    if (gs.sun.quadrant == 1)
+    {
+        gs.sun.lightCoef.x -= gs.sun.mod;
+        if (gs.sun.lightCoef.x <= -1)
+        {
+            gs.sun.lightCoef.x = -1;
+            gs.sun.quadrant = 2;
+        }
+    }
+    else if (gs.sun.quadrant == 2)
+    {
+        gs.sun.lightCoef.x += gs.sun.mod;
+        if (gs.sun.lightCoef.x >= 0)
+        {
+            gs.sun.lightCoef.x = 0;
+            gs.sun.quadrant = 3;
+        }
+    }
+    else if (gs.sun.quadrant == 3)
+    {
+        gs.sun.lightCoef.x += gs.sun.mod;
+        if (gs.sun.lightCoef.x >= 1)
+        {
+            gs.sun.lightCoef.x = 1;
+            gs.sun.quadrant = 4;
+        }
+    }
+    else if (gs.sun.quadrant == 4)
+    {
+        gs.sun.lightCoef.x -= gs.sun.mod;
+        if (gs.sun.lightCoef.x <= 0)
+        {
+            gs.sun.lightCoef.x = 0;
+            gs.sun.quadrant = 1;
+        }
+    }
+}
 void drawSquare(){
-    //?Could send lights/colors here per object...
         glBegin(GL_QUADS);
             //green - front
             glNormal3f(0, 1, 0);
@@ -150,10 +224,20 @@ void drawCubeTank(const struct Tank tank){
         glScalef(tank.tankScale.x, tank.tankScale.y, tank.tankScale.z);
         drawSquare();
     glPopMatrix();
+    glPushMatrix();
+        glTranslatef(tank.tankTranslate.x, tank.tankTranslate.y + tank.tankScale.y, tank.tankTranslate.z);
+        glScalef(tank.tankScale.x / 1.2, tank.tankScale.y / 1.2, tank.tankScale.z / 1.2);
+        drawSquare();
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(tank.tankTranslate.x, tank.tankTranslate.y + tank.tankScale.y*1.5, tank.tankTranslate.z-2);
+        glScalef(0.2, 0.2, 1);
+        glutSolidSphere(1, 20, 20);
+    glPopMatrix();
 }
 void drawCar(const struct Car car){
     glPushMatrix();
-        glTranslatef(car.carPosition.x, car.carPosition.y, car.carPosition.z);
+        glTranslatef(car.carTranslate.x, car.carTranslate.y, car.carTranslate.z);
         glScalef(car.carScale.x, car.carScale.y, car.carScale.z);
         glRotatef(car.carRotate.x, 1, 0, 0);
         glRotatef(car.carRotate.y, 0, 1, 0);
@@ -161,9 +245,54 @@ void drawCar(const struct Car car){
         drawSquare();
     glPopMatrix();
 }
+void drawSideRoad(const struct Road road){
+    glPushMatrix();
+        glTranslatef(road.roadTranslation.x, road.roadTranslation.y, road.roadTranslation.z);
+        glScalef(road.roadScale.x, road.roadScale.y, road.roadScale.z);
+        glRotatef(road.roadRotation.x, 1, 0, 0);
+        glRotatef(road.roadRotation.y, 0, 1, 0);
+        glRotatef(road.roadRotation.z, 0, 0, 1);
+        
+        glLineWidth(1);
+        struct Vector3f v3f = {1, 1, 1};
+        glBindTexture(GL_TEXTURE_2D, names[0]);
+        //setVertexColor(.45, .27, .13);
+        setVertexColor(.5,.5,.5);
+        glNormal3f(0, 1, 0);
+        glBegin(GL_QUADS);
+            glTexCoord2f(-2, -2);
+            glVertex3f(-v3f.x,-v3f.y, v3f.z);//bottom left
+            glTexCoord2f(2, -2);
+            glVertex3f(v3f.x, -v3f.y, v3f.z);//bottom right
+            glTexCoord2f(2, 2);
+            glVertex3f(v3f.x, v3f.y, v3f.z);//top right
+            glTexCoord2f(-2, 2);
+            glVertex3f(-v3f.x, v3f.y, v3f.z);//top left
+        glEnd();
+        glBindTexture(GL_TEXTURE_2D, 0);
+    glPopMatrix();
+}
+
+bool collisionCheck(struct Tank tank, struct Car car){
+    // Collision x-axis
+    bool collisionX = tank.tankTranslate.x + tank.tankScale.x >= car.carTranslate.x &&
+        car.carTranslate.x + car.carScale.x >= tank.tankTranslate.x;
+    // Collision y-axis
+    bool collisionY = tank.tankTranslate.y + tank.tankScale.y >= car.carTranslate.y &&
+        car.carTranslate.y + car.carScale.y >= tank.tankTranslate.y;
+    //Collision z-axis
+    bool collisionZ = tank.tankTranslate.z + tank.tankScale.z >= car.carTranslate.z &&
+        car.carTranslate.z + car.carScale.z >= tank.tankTranslate.z;
+    // Collision only if on all three axes
+    
+    return collisionX && collisionY && collisionZ;
+}
+
+/* Object initializer functions */ // Move these in separate file?
+
 void tankInit(){
     gs.tankMainPlayer.tankTranslate.x = 0;
-    gs.tankMainPlayer.tankTranslate.y = -1; // need to fix inside tank drawing , and put 0 here. Its gonna be same effect, just cleaner ?
+    gs.tankMainPlayer.tankTranslate.y = -1;
     gs.tankMainPlayer.tankTranslate.z = 280; 
     
     gs.tankMainPlayer.tankScale.x = 1;
@@ -171,6 +300,9 @@ void tankInit(){
     gs.tankMainPlayer.tankScale.z = 3;
 
     gs.tankMainPlayer.tankSpeed = 30; 
+    gs.tankMainPlayer.currDir = 0;
+    gs.tankMainPlayer.prevDir = 0;
+    gs.tankMainPlayer.v = 0;
 }
 void roadInit(){
     gs.road.roadScale.x = 6; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
@@ -232,89 +364,146 @@ void carsInit(){
         gs.carArray[i].carRotate.y = 180; //cars need to go forward
         gs.carArray[i].carRotate.z = 0;
 
-        gs.carArray[i].carPosition.x = gs.car.setOfCarXPositionsAllowedValues[rand()%3];
-        gs.carArray[i].carPosition.y = -1; //need to fix inside car drawing , and put 0 here. Its gonna be same effect, just cleaner ?
-        gs.carArray[i].carPosition.z = gs.car.ZSpawnPoint;
+        gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[rand()%3];
+        gs.carArray[i].carTranslate.y = -1;
+        gs.carArray[i].carTranslate.z = gs.car.ZSpawnPoint;
     }
     //Timers for callback onTimer function
     gs.car.timeCarSpawn = 1000;   // 1 sec
 }
-/* todo: later figure if I want this even
 void rightSideRoadInit(){
     //same as road, move it to side(left and right), different collor
-    gs.sideRoad.roadScale.x = 3; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
-    gs.sideRoad.roadScale.y = 4; // 
-    gs.sideRoad.roadScale.z = 1; // road is 300m long.
+    gs.rightSideRoad.roadScale.x = 18;   // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
+    gs.rightSideRoad.roadScale.y = 1;   //
+    gs.rightSideRoad.roadScale.z = 300; // road is 300m long.
     //Road is starting in 0,0,300 and goes until 0,0,-300
 
-    gs.sideRoad.roadRotation.x = 90; //angle
-    gs.sideRoad.roadRotation.y = 90;  //angle
-    gs.sideRoad.roadRotation.z = 0;  //angle
+    gs.rightSideRoad.roadRotation.x = 90; //angle
+    gs.rightSideRoad.roadRotation.y = 0;  //angle
+    gs.rightSideRoad.roadRotation.z = 0;  //angle
 
-    gs.sideRoad.roadTranslation.x = 3;
-    gs.sideRoad.roadTranslation.y = 0;
-    gs.sideRoad.roadTranslation.z = 0;
+    gs.rightSideRoad.roadTranslation.x = gs.rightSideRoad.roadScale.x + gs.road.roadScale.x;
+    gs.rightSideRoad.roadTranslation.y = 0;
+    gs.rightSideRoad.roadTranslation.z = 0;
 
-    gs.sideRoad2.roadScale.x = 3; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
-    gs.sideRoad2.roadScale.y = 4; // 
-    gs.sideRoad2.roadScale.z = 1; // road2 is 300m long. 
+    gs.rightSideRoad2.roadScale.x = 18;   // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
+    gs.rightSideRoad2.roadScale.y = 1;   //
+    gs.rightSideRoad2.roadScale.z = 300; // road2 is 300m long.
     //Road is starting in 0,0,-300 and goes until 0,0,-900
-    gs.sideRoad2.roadRotation.x = 90; //angle
-    gs.sideRoad2.roadRotation.y = 90;  //angle
-    gs.sideRoad2.roadRotation.z = 0;  //angle
+    gs.rightSideRoad2.roadRotation.x = 90; //angle
+    gs.rightSideRoad2.roadRotation.y = 0;  //angle
+    gs.rightSideRoad2.roadRotation.z = 0;  //angle
 
     //Road 3 is 300m long and is starting on 0,0,-300 goes until 0,0,-900
-    gs.sideRoad2.roadTranslation.x = 3;
-    gs.sideRoad2.roadTranslation.y = 0;
-    gs.sideRoad2.roadTranslation.z = 30;
+    gs.rightSideRoad2.roadTranslation.x = gs.rightSideRoad2.roadScale.x + gs.road2.roadScale.x;
+    gs.rightSideRoad2.roadTranslation.y = 0;
+    gs.rightSideRoad2.roadTranslation.z = -600;
 
-    gs.sideRoad3.roadScale.x = 3; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
-    gs.sideRoad3.roadScale.y = 4; // 
-    gs.sideRoad3.roadScale.z = 1; // road3 is 300m long
-    
-    gs.sideRoad3.roadRotation.x = 90; //angle
-    gs.sideRoad3.roadRotation.y = 90;  //angle
-    gs.sideRoad3.roadRotation.z = 0;  //angle
+    gs.rightSideRoad3.roadScale.x = 18;   // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
+    gs.rightSideRoad3.roadScale.y = 1;   //
+    gs.rightSideRoad3.roadScale.z = 300; // road3 is 300m long
+
+    gs.rightSideRoad3.roadRotation.x = 90; //angle
+    gs.rightSideRoad3.roadRotation.y = 0;  //angle
+    gs.rightSideRoad3.roadRotation.z = 0;  //angle
 
     //Road 3 is 300m long and is starting on 0,0,-900 goes until 0,0,-1500
-    gs.sideRoad3.roadTranslation.x = 3;
-    gs.sideRoad3.roadTranslation.y = 0;
-    gs.sideRoad3.roadTranslation.z = 60;
+    gs.rightSideRoad3.roadTranslation.x = gs.rightSideRoad3.roadScale.x + gs.road3.roadScale.x;
+    gs.rightSideRoad3.roadTranslation.y = 0;
+    gs.rightSideRoad3.roadTranslation.z = -1200;
 }
-void drawSideRoad(const struct Road road){
-    
-    glPushMatrix();
-        glTranslatef(road.roadTranslation.x, road.roadTranslation.y, road.roadTranslation.z);
-        glScalef(road.roadScale.x, road.roadScale.y, road.roadScale.z);
-        glRotatef(road.roadRotation.x, 1, 0, 0);
-        glRotatef(road.roadRotation.y, 0, 1, 0);
-        glRotatef(road.roadRotation.z, 0, 0, 1);
-        
-        glLineWidth(1);
-        struct Vector3f v3f = {1, 1, 1};
+void leftSideRoadInit()
+{
+    //same as road, move it to side(left and right), different collor
+    gs.leftSideRoad.roadScale.x = 18; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
+    gs.leftSideRoad.roadScale.y = 1; //
+    gs.leftSideRoad.roadScale.z = 300; // road is 300m long.
+    //Road is starting in 0,0,300 and goes until 0,0,-300
 
-        glColor3f(.45, .27, .13);
-        glBegin(GL_POLYGON);
-            glVertex3f(-v3f.x,-v3f.y, v3f.z);//bottom left
-            glVertex3f(v3f.x, -v3f.y, v3f.z);//bottom right
-            glVertex3f(v3f.x, v3f.y, v3f.z);//top right
-            glVertex3f(-v3f.x, v3f.y, v3f.z);//top left
-        glEnd();
-    glPopMatrix();
-}*/
+    gs.leftSideRoad.roadRotation.x = 90; //angle
+    gs.leftSideRoad.roadRotation.y = 0;  //angle
+    gs.leftSideRoad.roadRotation.z = 0;  //angle
+
+    gs.leftSideRoad.roadTranslation.x = -gs.leftSideRoad.roadScale.x - gs.road.roadScale.x;
+    gs.leftSideRoad.roadTranslation.y = 0;
+    gs.leftSideRoad.roadTranslation.z = 0;
+
+    gs.leftSideRoad2.roadScale.x = 18; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and left
+    gs.leftSideRoad2.roadScale.y = 1; //
+    gs.leftSideRoad2.roadScale.z = 300; // road2 is 300m long.
+    //Road is starting in 0,0,-300 and goes until 0,0,-900
+    gs.leftSideRoad2.roadRotation.x = 90; //angle
+    gs.leftSideRoad2.roadRotation.y = 0;  //angle
+    gs.leftSideRoad2.roadRotation.z = 0;  //angle
+
+    //Road 3 is 300m long and is starting on 0,0,-300 goes until 0,0,-900
+    gs.leftSideRoad2.roadTranslation.x = -gs.leftSideRoad.roadScale.x - gs.road.roadScale.x;
+    gs.leftSideRoad2.roadTranslation.y = 0;
+    gs.leftSideRoad2.roadTranslation.z = -600;
+
+    gs.leftSideRoad3.roadScale.x = 18; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and left
+    gs.leftSideRoad3.roadScale.y = 1; //
+    gs.leftSideRoad3.roadScale.z = 300; // road3 is 300m long
+
+    gs.leftSideRoad3.roadRotation.x = 90; //angle
+    gs.leftSideRoad3.roadRotation.y = 0;  //angle
+    gs.leftSideRoad3.roadRotation.z = 0;  //angle
+
+    //Road 3 is 300m long and is starting on 0,0,-900 goes until 0,0,-1500
+    gs.leftSideRoad3.roadTranslation.x = -gs.leftSideRoad.roadScale.x - gs.road.roadScale.x;
+    gs.leftSideRoad3.roadTranslation.y = 0;
+    gs.leftSideRoad3.roadTranslation.z = -1200;
+}
 void skyInit(){
     gs.sky.skyColor.x = 0.6;
     gs.sky.skyColor.y = 0.8;
     gs.sky.skyColor.z = 1;
     gs.sky.dayTimer = 30;
-    gs.sky.flag = 0; // while its 0 its day, when 1 its night
+    gs.sky.flag = 0; // while its 0 its peak of day, when 1 its peak of night
+}
+void sunInit(){
+    gs.sun.sunRotate.x = 0;
+    gs.sun.sunRotate.y = 0;
+    gs.sun.sunRotate.z = 0;
+    gs.sun.sunTranslate.x = 0;
+    gs.sun.sunTranslate.y = 45; // it doesnt go trough road with this value
+    gs.sun.sunTranslate.z = -50;
+    gs.sun.lightCoef.x = 0;
+    gs.sun.lightCoef.y = 1;
+    gs.sun.lightCoef.z = 1;
+    gs.sun.mod = 0.0033; //TODO: fix math in code, this number is paper math
+    gs.sun.quadrant = 1;
+}
+void imageInit(){
+    //Code taken from class and edited for own needs.
+    Image * image;
+    image = image_init(0,0);
+    image_read(image, "sand.bmp");
+    glGenTextures(2, names);
+
+    glBindTexture(GL_TEXTURE_2D, names[0]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                image->width, image->height, 0,
+                GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    image_done(image);
 }
 void initRenderingObjects(){
     roadInit();
     carsInit();
-    //rightSideRoadInit();
+    leftSideRoadInit();
+    rightSideRoadInit();
     tankInit();
     skyInit();
+    sunInit();
+    imageInit();
     gs.cameraMovement = 0;
     gs.lightModifier = 0.0;
     gs.numberOfCrushes = 0;

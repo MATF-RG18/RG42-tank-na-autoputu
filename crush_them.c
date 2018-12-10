@@ -10,7 +10,7 @@ int main(int argc, char** argv){
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     //initialize Window
-    glutInitWindowSize(800, 600);
+    glutInitWindowSize(1300, 700);
     glutInitWindowPosition(2000, 100); //TODO edit this to width/2, height/2 to center it on one screen
     glutCreateWindow("Crush them!");
 
@@ -18,6 +18,7 @@ int main(int argc, char** argv){
     glutDisplayFunc(onDisplay);
     glutReshapeFunc(onReshape);
     glutKeyboardFunc(onKeyboardInput);
+    glutKeyboardUpFunc(onKeyboardUp);
     // initialize stuff
     
     init();
