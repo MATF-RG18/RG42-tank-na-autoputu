@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "image.h"
+#include <math.h>
 
 /************************************
     Functions definitions start here
@@ -36,6 +37,7 @@ void drawSun(){
         glutSolidSphere(1, 50, 50);
     glPopMatrix();
 }
+
 void skyChangeFunction(){
     if (gs.sun.sunRotate.z >= 360){ // instead of moduo 360
         gs.sun.sunRotate.z = 0;
@@ -105,7 +107,7 @@ void skyChangeFunction(){
 }
 void drawSquare(){
         glBegin(GL_QUADS);
-            //green - front
+            //blue - front
             glNormal3f(0, 1, 0);
             setVertexColor(0, 0, 1);
             glVertex3f(-0.5, 0, -0.5);
@@ -114,7 +116,7 @@ void drawSquare(){
             glVertex3f(0.5, 0, -0.5);
 
             //green - back
-            glNormal3f(0, 0, -1);
+            glNormal3f(0, -1, 0);
             setVertexColor(0, 1, 0);
             glVertex3f(-0.5, 0, +0.5);
             glVertex3f(-0.5, 1, +0.5);
@@ -158,38 +160,85 @@ void drawSquare(){
 }
 void drawRoad(const struct Road road){
     glPushMatrix();
-        glTranslatef(road.roadTranslation.x, road.roadTranslation.y, road.roadTranslation.z);
-        glScalef(road.roadScale.x, road.roadScale.y, road.roadScale.z);
+        struct Vector3f v3f = {.5, .5, .5};
+
+        glTranslatef(road.roadTranslation.x, road.roadTranslation.y-1.5f, road.roadTranslation.z);
+        glScalef(road.roadScale.x * 2.f, road.roadScale.y, road.roadScale.z * 2.f);
         glRotatef(road.roadRotation.x, 1, 0, 0);
         glRotatef(road.roadRotation.y, 0, 1, 0);
         glRotatef(road.roadRotation.z, 0, 0, 1);
+
+        drawSingleColorSquare();
         
-        glLineWidth(1);
-        struct Vector3f v3f = {1, 1, 1};
-
-        setVertexColor(0.3, 0.3, 0.3);
-        glBegin(GL_POLYGON);
-            glNormal3f(0, 1, 0);
-            glVertex3f(-v3f.x,-v3f.y, v3f.z);//bottom left
-            glVertex3f(v3f.x, -v3f.y, v3f.z);//bottom right
-            glVertex3f(v3f.x, v3f.y, v3f.z);//top right
-            glVertex3f(-v3f.x, v3f.y, v3f.z);//top left
-        glEnd();
-
         glLineWidth(4);
         glBegin(GL_LINES);
                 setVertexColor(1, 1, 1);
                 //left line
                 glNormal3f(0, 1, 0);
-                glVertex3f(-v3f.x/3, -v3f.y, v3f.z-0.1); // z-axis, -0.01 is just so we see lines
-                glVertex3f(-v3f.x/3, v3f.y, v3f.z-0.1);  // they are just tiny bit above road it self
+                glVertex3f(-v3f.x/3, -v3f.y, v3f.z-1.01); // z-axis, -1.01 is just so we see lines
+                glVertex3f(-v3f.x/3, v3f.y, v3f.z-1.01);  // they are just tiny bit above road it self
                 //right line                                // better solution?
                 glNormal3f(0, 1, 0);
-                glVertex3f(v3f.x/3, -v3f.y, v3f.z-0.1); 
-                glVertex3f(v3f.x/3, v3f.y, v3f.z-0.1);
+                glVertex3f(v3f.x/3, -v3f.y, v3f.z-1.01); 
+                glVertex3f(v3f.x/3, v3f.y, v3f.z-1.01);
         glEnd();
     glPopMatrix();
 }
+
+void drawSingleColorSquare(){
+    glBegin(GL_QUADS);
+        //blue - front
+        glNormal3f(0, 1, 0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(-0.5, 0, -0.5);
+        glVertex3f(-0.5, 1, -0.5);
+        glVertex3f(0.5, 1, -0.5);
+        glVertex3f(0.5, 0, -0.5);
+
+        //green - back
+        glNormal3f(0, -1, 0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(-0.5, 0, +0.5);
+        glVertex3f(-0.5, 1, +0.5);
+        glVertex3f(0.5, 1, 0.5);
+        glVertex3f(0.5, 0, 0.5);
+
+        //sides
+        // purple - right
+        glNormal3f(1.0, 0.0, 0.0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(0.5, 0, -0.5);
+        glVertex3f(0.5, 1, -0.5);
+        glVertex3f(0.5, 1, +0.5);
+        glVertex3f(0.5, 0, +0.5);
+
+        //brown- left
+        glNormal3f(-1.0, 0.0, 0.0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(-0.5, 0, -0.5);
+        glVertex3f(-0.5, 1, -0.5);
+        glVertex3f(-0.5, 1, +0.5);
+        glVertex3f(-0.5, 0, +0.5);
+
+        // top and bottom
+        //white - bottom
+        glNormal3f(0, -1, 0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(-0.5, 0, +0.5);
+        glVertex3f(+0.5, 0, +0.5);
+        glVertex3f(+0.5, 0, -0.5);
+        glVertex3f(-0.5, 0, -0.5);
+
+        //yellow - top
+        glNormal3f(0.0, 1.0, 0.0);
+        setVertexColor(.3, .3, .3);
+        glVertex3f(0.5, 1, +0.5);
+        glVertex3f(-0.5, 1, +0.5);
+        glVertex3f(-0.5, 1, -0.5);
+        glVertex3f(0.5, 1, -0.5);
+    glEnd();
+}
+
 void drawScore(){
     glColor3f(1, 0 ,0);
     glMatrixMode(GL_PROJECTION); // Take current project matrix
@@ -218,33 +267,114 @@ void drawScore(){
     glPopMatrix(); // Pop 1st copy matrix
     glutPostRedisplay(); // print all on screen
 }
-void drawCubeTank(const struct Tank tank){
+
+void drawEndGame(){
+    glColor3f(1, 0 ,0);
+    glMatrixMode(GL_PROJECTION); // Take current project matrix
+    glPushMatrix();  // Push so we work with new "copy" matrix
+        glLoadIdentity(); // Identity
+        glMatrixMode(GL_MODELVIEW); // Add modelMatrix to it
+            glPushMatrix(); // push so we work with new "copy" matrix
+                glLoadIdentity(); // identity
+                gluOrtho2D(0.0, gs.WindowWidth, 0.0, gs.WindowHeight); // work within window
+                    //add score drawing with bitmap
+                    char gameOver[11] = "Game over!";
+                    //set the position of the text in the window using the x and y coordinates
+                    glRasterPos2i(gs.WindowWidth/2 - 60,gs.WindowHeight/2);
+                    //get the length of the string to display
+                    int len = (int)strlen(gameOver);
+                    //loop to display character by character
+                    for (int i = 0; i < len; i++){
+                        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, gameOver[i]);
+                    }
+                glMatrixMode(GL_PROJECTION); // put Projection matrix back in
+            glPopMatrix(); // Pop 2nd copy matrix
+        glMatrixMode(GL_MODELVIEW); // Put Model back in
+    glPopMatrix(); // Pop 1st copy matrix
+    glutPostRedisplay(); // print all on screen
+}
+
+void drawCubeTank(const struct Tank tank)
+{   
     glPushMatrix();
+        // Start matrix at the position of the tank
         glTranslatef(tank.tankTranslate.x, tank.tankTranslate.y, tank.tankTranslate.z);
-        glScalef(tank.tankScale.x, tank.tankScale.y, tank.tankScale.z);
-        drawSquare();
-    glPopMatrix();
-    glPushMatrix();
-        glTranslatef(tank.tankTranslate.x, tank.tankTranslate.y + tank.tankScale.y, tank.tankTranslate.z);
-        glScalef(tank.tankScale.x / 1.2, tank.tankScale.y / 1.2, tank.tankScale.z / 1.2);
-        drawSquare();
-    glPopMatrix();
-    glPushMatrix();
-        glTranslatef(tank.tankTranslate.x, tank.tankTranslate.y + tank.tankScale.y*1.5, tank.tankTranslate.z-2);
-        glScalef(0.2, 0.2, 1);
-        glutSolidSphere(1, 20, 20);
+        // Save the tank-scale, we dont want that to apply to the turret and gun
+        glPushMatrix();
+            glScalef(tank.tankScale.x, tank.tankScale.y, tank.tankScale.z);
+            drawSquare();
+        glPopMatrix();
+        // Move the matrix up by the tank height, so we get the turret ontop of the tank
+        glTranslatef(0, tank.tankScale.y, 0);
+        // This will rotate the turret and gun
+        glRotatef(gs.tankMainPlayer.rotateTurret.x, 0, 1, 0);
+        struct Vector3f turretSize;
+        turretSize.x = tank.tankScale.x / 1.2;
+        turretSize.y = tank.tankScale.y / 1.2;
+        turretSize.z = tank.tankScale.z / 1.2;
+        // Save the turret-scale, we dont want that to apply to the gun
+        glPushMatrix();
+            glScalef(turretSize.x, turretSize.y, turretSize.z);
+            drawSquare();
+        glPopMatrix();
+
+        // Dont really need to save matrix here, since this is the last transformations we do anyway
+        glPushMatrix();
+            float barrelLenght = 1.5;
+
+            // Start by moving the barrel origin to the edge of the turret
+            float barrelZPosition = turretSize.z * 0.5;
+            // Then move the barrel by half its lenght, so that we push the rest of the barrel out of the turret
+            barrelZPosition += barrelLenght * 0.5;
+            
+            // Move the barrel UP by half the turret-size, so that its centered on the turret
+            float barrelYPosition = turretSize.y * 0.5;
+
+            glTranslatef(0, barrelYPosition, -barrelZPosition);
+            glScalef(0.2, 0.2, barrelLenght);
+            glutSolidSphere(1, 20, 20);
+        glPopMatrix();
     glPopMatrix();
 }
+
+void drawBullet(){  
+    glPushMatrix();
+        glTranslatef(gs.bullet.position.x, gs.bullet.position.y, gs.bullet.position.z);
+        glDisable(GL_LIGHT0);
+        glEnable(GL_LIGHT1);
+        glEnable(GL_COLOR_MATERIAL);
+        glColor3f(.3, .3, .3);
+        glutSolidSphere(0.3, 10, 10);
+        glDisable(GL_LIGHT1);
+        glDisable(GL_COLOR_MATERIAL);
+        glEnable(GL_LIGHT0);
+    glPopMatrix();
+}
+
 void drawCar(const struct Car car){
     glPushMatrix();
-        glTranslatef(car.carTranslate.x, car.carTranslate.y, car.carTranslate.z);
+    glTranslatef(car.carTranslate.x, car.carTranslate.y, car.carTranslate.z); // use same Translate for Car and for Shield
+    glPushMatrix();
         glScalef(car.carScale.x, car.carScale.y, car.carScale.z);
         glRotatef(car.carRotate.x, 1, 0, 0);
         glRotatef(car.carRotate.y, 0, 1, 0);
         glRotatef(car.carRotate.z, 0, 0, 1);
         drawSquare();
     glPopMatrix();
+    if(car.showShield == 1){
+        glPushMatrix();
+                glEnable(GL_BLEND);
+                glEnable(GL_COLOR_MATERIAL);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glColor4f(1, 0, 0, car.shieldOpacity);
+                glutSolidSphere(car.carScale.y + 0.3, 10, 10); // Spawns shield around car.
+                glDisable(GL_BLEND);
+                glDisable(GL_COLOR_MATERIAL);
+        glPopMatrix();
+    }
+    glPopMatrix();
 }
+
 void drawSideRoad(const struct Road road){
     glPushMatrix();
         glTranslatef(road.roadTranslation.x, road.roadTranslation.y, road.roadTranslation.z);
@@ -256,8 +386,7 @@ void drawSideRoad(const struct Road road){
         glLineWidth(1);
         struct Vector3f v3f = {1, 1, 1};
         glBindTexture(GL_TEXTURE_2D, names[0]);
-        //setVertexColor(.45, .27, .13);
-        setVertexColor(.5,.5,.5);
+        setVertexColor(1,1,1);
         glNormal3f(0, 1, 0);
         glBegin(GL_QUADS);
             glTexCoord2f(-2, -2);
@@ -273,22 +402,42 @@ void drawSideRoad(const struct Road road){
     glPopMatrix();
 }
 
-bool collisionCheck(struct Tank tank, struct Car car){
+bool collisionCheck(struct Vector3f a, struct Vector3f b, struct Vector3f asize, struct Vector3f bsize){
     // Collision x-axis
-    bool collisionX = tank.tankTranslate.x + tank.tankScale.x >= car.carTranslate.x &&
-        car.carTranslate.x + car.carScale.x >= tank.tankTranslate.x;
+    bool collisionX = a.x + asize.x >= b.x && b.x + bsize.x >= a.x;
     // Collision y-axis
-    bool collisionY = tank.tankTranslate.y + tank.tankScale.y >= car.carTranslate.y &&
-        car.carTranslate.y + car.carScale.y >= tank.tankTranslate.y;
+    bool collisionY = a.y + asize.y >= b.y && b.y + bsize.y >= a.y;
     //Collision z-axis
-    bool collisionZ = tank.tankTranslate.z + tank.tankScale.z >= car.carTranslate.z &&
-        car.carTranslate.z + car.carScale.z >= tank.tankTranslate.z;
+    bool collisionZ = a.z + asize.z >= b.z && b.z + bsize.z >= a.z;
     // Collision only if on all three axes
-    
+
     return collisionX && collisionY && collisionZ;
 }
 
-/* Object initializer functions */ // Move these in separate file?
+struct Vector3f getDirection(struct Vector3f a, struct Vector3f b)
+{
+    struct Vector3f result = b;
+    result.x -= a.x;
+    result.y -= a.y;
+    result.z -= a.z;
+    return normalize(result);
+}
+
+struct Vector3f normalize(struct Vector3f a){
+    float len = sqrt((a.x*a.x)+(a.y*a.y)+(a.z+a.z));
+    struct Vector3f result;
+    if(len == 0){
+        result.x = 0;
+        result.y = 0;
+        result.z = 0;
+    }
+    result.x = a.x / len;
+    result.y = a.y / len;
+    result.z = a.z / len;
+    return result;
+}
+
+/* Object initializer functions */ //?Move these in separate file?
 
 void tankInit(){
     gs.tankMainPlayer.tankTranslate.x = 0;
@@ -299,10 +448,15 @@ void tankInit(){
     gs.tankMainPlayer.tankScale.y = 1;
     gs.tankMainPlayer.tankScale.z = 3;
 
+    gs.tankMainPlayer.rotateTurret.x = 0;
+
     gs.tankMainPlayer.tankSpeed = 30; 
     gs.tankMainPlayer.currDir = 0;
     gs.tankMainPlayer.prevDir = 0;
-    gs.tankMainPlayer.v = 0;
+
+    gs.lastMouseX = gs.WindowHeight/2;
+
+    gs.tankMainPlayer.shoot = false;
 }
 void roadInit(){
     gs.road.roadScale.x = 6; // road width will be 6m - prone to change -- if it changes, need to account change with car positions and how much tank can move to left and right
@@ -344,14 +498,59 @@ void roadInit(){
     gs.road3.roadTranslation.y = 0;
     gs.road3.roadTranslation.z = -1200;
 }
+
+void setTankTurretMatrix(void)
+{
+    // Start matrix at the position of the tank
+    glTranslatef(gs.tankMainPlayer.tankTranslate.x, gs.tankMainPlayer.tankTranslate.y, gs.tankMainPlayer.tankTranslate.z);
+
+    // Move the matrix up by the tank height, so we get the turret ontop of the tank
+    glTranslatef(0, gs.tankMainPlayer.tankScale.y, 0);
+
+    // This will rotate the turret and gun
+    glRotatef(gs.tankMainPlayer.rotateTurret.x, 0, 1, 0);
+    struct Vector3f turretSize;
+    turretSize.x = gs.tankMainPlayer.tankScale.x / 1.2;
+    turretSize.y = gs.tankMainPlayer.tankScale.y / 1.2;
+    turretSize.z = gs.tankMainPlayer.tankScale.z / 1.2;
+
+    float barrelLenght = 1.5;
+
+    // Start by moving the barrel origin to the edge of the turret
+    float barrelZPosition = turretSize.z * 0.5;
+    // Then move the barrel by half its lenght, so that we push the rest of the barrel out of the turret
+    barrelZPosition += barrelLenght * 0.5;
+
+    // Move the barrel UP by half the turret-size, so that its centered on the turret
+    float barrelYPosition = turretSize.y * 0.5;
+    glTranslatef(0, barrelYPosition, -barrelZPosition);
+}
+
+void bulletInit(){
+
+    gs.bullet.position.x = 0;
+    gs.bullet.position.y = 0.386667;
+    gs.bullet.position.z = 0;
+
+    gs.bullet.direction.x = 0;
+    gs.bullet.direction.y = 0;
+    gs.bullet.direction.z = 0;
+
+    gs.bullet.needToResetBullet = false;
+    gs.bullet.Charging = 0;
+
+    gs.bullet.scale.x = 1;
+    gs.bullet.scale.y = 1;
+    gs.bullet.scale.z = 1;
+}
 void carsInit(){
     // Init cars
     gs.car.numOfCars = 1; // used for drawing cars.
 
     srand(time(NULL));
-    gs.car.setOfCarXPositionsAllowedValues[0] = -3.;
+    gs.car.setOfCarXPositionsAllowedValues[0] = -4;
     gs.car.setOfCarXPositionsAllowedValues[1] = 0;
-    gs.car.setOfCarXPositionsAllowedValues[2] = 3.;
+    gs.car.setOfCarXPositionsAllowedValues[2] = 4;
     gs.car.ZSpawnPoint = 300; // How far away from tank, cars should spawn
     gs.car.carSpeed = 30; 
     
@@ -364,12 +563,17 @@ void carsInit(){
         gs.carArray[i].carRotate.y = 180; //cars need to go forward
         gs.carArray[i].carRotate.z = 0;
 
-        gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[rand()%3];
+        gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[i % 3];
         gs.carArray[i].carTranslate.y = -1;
-        gs.carArray[i].carTranslate.z = gs.car.ZSpawnPoint;
+        gs.carArray[i].carTranslate.z = gs.car.ZSpawnPoint;      
+        
+        gs.car.lastZPoint = gs.carArray[i].carTranslate.z;
+        gs.car.showShield = 0;
+        gs.car.shieldOpacity = 0;
     }
     //Timers for callback onTimer function
     gs.car.timeCarSpawn = 1000;   // 1 sec
+    gs.car.lastCar = MAX_CARS_ALLOWED;
 }
 void rightSideRoadInit(){
     //same as road, move it to side(left and right), different collor
@@ -474,6 +678,7 @@ void sunInit(){
     gs.sun.mod = 0.0033; //TODO: fix math in code, this number is paper math
     gs.sun.quadrant = 1;
 }
+
 void imageInit(){
     //Code taken from class and edited for own needs.
     Image * image;
@@ -503,8 +708,10 @@ void initRenderingObjects(){
     tankInit();
     skyInit();
     sunInit();
+    bulletInit();
     imageInit();
     gs.cameraMovement = 0;
     gs.lightModifier = 0.0;
     gs.numberOfCrushes = 0;
+    gs.gameover = false;
 }

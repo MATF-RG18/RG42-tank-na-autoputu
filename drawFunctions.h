@@ -33,14 +33,19 @@ struct Car{
     struct Vector3f carScale;
     struct Vector3f carTranslate;
     struct Vector3f carRotate;
+    int showShield;
+    float shieldOpacity;
+    int lastZPoint;
+    int lastCar;
 };
 struct Tank{
     struct Vector3f tankTranslate;
     struct Vector3f tankScale;
+    struct Vector3f rotateTurret;
     float tankSpeed;
-    int v; // its used as vector of movement of tank,towards left, stands in spot, towards right -1, 0 , 1
     int prevDir;
     int currDir;
+    bool shoot;
 };
 struct Road{
     struct Vector3f roadScale;
@@ -58,7 +63,18 @@ struct Sun{
     struct Vector3f lightCoef;
     int quadrant;
     float mod;
+    struct Vector3f sunPosition;
+    struct Vector3f lightDirection;
 };
+
+struct Bullet{
+    struct Vector3f position;
+    struct Vector3f direction;
+    struct Vector3f scale;
+    bool needToResetBullet;
+    int Charging;
+};
+
 //Keeps info about whole game state
 struct gameState{
     struct Car carArray[MAX_CARS_ALLOWED];
@@ -69,30 +85,41 @@ struct gameState{
     struct Road rightSideRoad, rightSideRoad2, rightSideRoad3;
     struct Road leftSideRoad, leftSideRoad2, leftSideRoad3;
     struct Tank tankMainPlayer;
+    struct Bullet bullet;
     int WindowWidth;
     int WindowHeight;
     int actionOnGoing;
     float cameraMovement;
     int numberOfCrushes;
     float lightModifier;
+    int lastMouseX;
+    bool leftMouseDown;
+    bool gameover;
 };
 
 void init(void);
-void initRenderingObjects();
-void drawSquare();
+void initRenderingObjects(void);
+void drawSquare(void);
 void drawRoad(const struct Road road);
 void drawCubeTank(const struct Tank tank);
 void drawCar(const struct Car cars);
-void drawSun();
-void tankInit();
-void roadInit();
-void skyInit();
-void carInit();
-void drawScore();
-void sunInit();
-void skyChangeFunction();
-void rightSideRoadInit();
-void leftSideRoadInit();
+void drawSun(void);
+void tankInit(void);
+void roadInit(void);
+void skyInit(void);
+void carInit(void);
+void drawScore(void);
+void sunInit(void);
+void skyChangeFunction(void);
+void setTankTurretMatrix(void);
+void rightSideRoadInit(void);
+void drawBullet(void);
+struct Vector3f getDirection(struct Vector3f a, struct Vector3f b);
+void leftSideRoadInit(void);
 void drawSideRoad(const struct Road road);
-bool collisionCheck(struct Tank tank, struct Car car);
+bool collisionCheck(struct Vector3f a, struct Vector3f b, struct Vector3f asize, struct Vector3f bsize);
+struct Vector3f normalize(struct Vector3f);
+void drawEndGame(void);
+void drawSingleColorSquare(void);
+void bulletInit(void);
 #endif
