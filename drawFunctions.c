@@ -528,13 +528,21 @@ void setTankTurretMatrix(void)
 
 void bulletInit(){
 
-    gs.bullet.position.x = 0;
-    gs.bullet.position.y = 0.386667;
-    gs.bullet.position.z = 0;
+    glPushMatrix();
+        glLoadIdentity();
+        setTankTurretMatrix();
 
-    gs.bullet.direction.x = 0;
-    gs.bullet.direction.y = 0;
-    gs.bullet.direction.z = 0;
+        GLfloat bulletMatrix[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, bulletMatrix);
+
+        gs.bullet.position.x = bulletMatrix[12];
+        gs.bullet.position.y = bulletMatrix[13];
+        gs.bullet.position.z = bulletMatrix[14];
+
+        gs.bullet.direction.x = bulletMatrix[8] * 1.3;
+        gs.bullet.direction.y = bulletMatrix[9] * 1.3;
+        gs.bullet.direction.z = bulletMatrix[10] * 2.3;
+    glPopMatrix();
 
     gs.bullet.needToResetBullet = false;
     gs.bullet.Charging = 0;

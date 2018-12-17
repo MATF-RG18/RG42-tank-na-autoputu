@@ -170,7 +170,7 @@ void tankShoot(int button, int state, int x, int y)
 
                     gs.bullet.direction.x = bulletMatrix[8] * 1.3;
                     gs.bullet.direction.y = bulletMatrix[9] * 1.3;
-                    gs.bullet.direction.z = bulletMatrix[10] * 2.3;
+                    gs.bullet.direction.z = bulletMatrix[10] * 1.3;
                     
                 glPopMatrix();
                 }
@@ -194,36 +194,82 @@ void onMousePassive(int x, int y){
 
 void onTimer(int timer){
     if (timer == carSpeedTimer){
-        //? 16.12.2018 , did some change again , needs new tests if cars spawn inside each other
+        //TODO 16.12.2018 , did some change again , needs new tests if cars spawn inside each other
         // this timer moves cars
-        for(int i = 0; i < gs.car.numOfCars; i++){
-            gs.carArray[i].carTranslate.z += 1;
-            if (gs.carArray[i].carTranslate.z - 10 >= gs.tankMainPlayer.tankTranslate.z + 10){//if car is behind tank -> respawn car
-                if (gs.numberOfCrushes >= 10){
-                    if (gs.carArray[i].shieldOpacity < 1){
-                        gs.carArray[i].shieldOpacity += 0.5;
-                        gs.carArray[i].showShield = 1;
-                    }
+        if(gs.actionOnGoing){
+            if (gs.tankMainPlayer.shoot)
+            {
+                gs.bullet.position.x -= gs.bullet.direction.x;
+                gs.bullet.position.y -= 0.03;
+                gs.bullet.position.z -= gs.bullet.direction.z;
+                gs.bullet.Charging++;
+                gs.bullet.needToResetBullet = false;
+
+                if (gs.bullet.position.y <= -1){ // -1 on Y is when bomb reaches floor
+                    gs.bullet.needToResetBullet = true;
+                    gs.bullet.Charging = 0;
                 }
-                gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[(i + 1) % 3];
-                gs.carArray[i].carTranslate.z = gs.tankMainPlayer.tankTranslate.z - gs.car.ZSpawnPoint; // if car passed tank, move it for 340 infront of tank.
-                gs.car.lastZPoint = gs.carArray[i].carTranslate.z; // last car that went by, his Z position
-            }else if(collisionCheck(gs.tankMainPlayer.tankTranslate, gs.carArray[i].carTranslate, gs.tankMainPlayer.tankScale, gs.carArray[i].carScale)){
-                if(gs.carArray[i].showShield == 1 && gs.carArray[i].shieldOpacity == 1){ // If there is collision with car with full shield. Game over.
-                    gs.gameover = true;
-                    gs.actionOnGoing = 0;
-                }else{
-                    if(gs.carArray[i].shieldOpacity > 0)
-                        gs.carArray[i].shieldOpacity -= 0.5;
-                    if (gs.carArray[i].shieldOpacity == 0)
-                        gs.carArray[i].showShield = 0;
-                }
-                gs.numberOfCrushes++;
-                gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[(i + 1) % 3];
-                gs.carArray[i].carTranslate.z = gs.tankMainPlayer.tankTranslate.z - gs.car.ZSpawnPoint;
-                gs.car.lastZPoint = gs.carArray[i].carTranslate.z;
             }
-            gs.car.lastCar = i;
+                for (int i = 0; i < gs.car.numOfCars; i++)
+                {
+                    if (!gs.bullet.needToResetBullet && collisionCheck(gs.bullet.position, gs.carArray[i].carTranslate, gs.bullet.scale, gs.carArray[i].carScale)){
+                        gs.bullet.needToResetBullet = true;
+                        gs.bullet.Charging = 0;
+                        if (gs.carArray[i].showShield == 0)
+                        {
+                            gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[(i + 1) % 3];
+                            gs.carArray[i].carTranslate.z = gs.tankMainPlayer.tankTranslate.z - gs.car.ZSpawnPoint; // if car passed tank, move it for 340 infront of tank.
+                            gs.car.lastZPoint = gs.carArray[i].carTranslate.z;                                      // last car that went by, his Z position
+                            gs.numberOfCrushes++;
+                        }
+                        if (gs.carArray[i].shieldOpacity > 0)
+                        {
+                            gs.carArray[i].shieldOpacity -= 0.5;
+                            if (gs.carArray[i].shieldOpacity == 0)
+                                gs.carArray[i].showShield = 0;
+                        }
+                        break;
+                    }
+                    
+                    gs.carArray[i].carTranslate.z += 1;
+                    if (gs.carArray[i].carTranslate.z - 10 >= gs.tankMainPlayer.tankTranslate.z + 10)
+                    { //if car is behind tank -> respawn car
+                        if (gs.numberOfCrushes >= 10)
+                        {
+                            if (gs.carArray[i].shieldOpacity < 1)
+                            {
+                                gs.carArray[i].shieldOpacity += 0.5;
+                                gs.carArray[i].showShield = 1;
+                            }
+                        }
+                        gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[(i + 1) % 3];
+                        gs.carArray[i].carTranslate.z = gs.tankMainPlayer.tankTranslate.z - gs.car.ZSpawnPoint; // if car passed tank, move it for 340 infront of tank.
+                        gs.car.lastZPoint = gs.carArray[i].carTranslate.z;                                      // last car that went by, his Z position
+                    }
+                    else if (collisionCheck(gs.tankMainPlayer.tankTranslate, gs.carArray[i].carTranslate, gs.tankMainPlayer.tankScale, gs.carArray[i].carScale))
+                    {
+                        if (gs.carArray[i].showShield == 1 && gs.carArray[i].shieldOpacity == 1)
+                        { // If there is collision with car with full shield. Game over.
+                            gs.gameover = true;
+                            gs.actionOnGoing = 0;
+                        }
+                        else
+                        {
+                            if (gs.carArray[i].shieldOpacity > 0)
+                                gs.carArray[i].shieldOpacity -= 0.5;
+                            if (gs.carArray[i].shieldOpacity == 0)
+                                gs.carArray[i].showShield = 0;
+                        }
+                        gs.numberOfCrushes++;
+                        gs.carArray[i].carTranslate.x = gs.car.setOfCarXPositionsAllowedValues[(i + 1) % 3];
+                        gs.carArray[i].carTranslate.z = gs.tankMainPlayer.tankTranslate.z - gs.car.ZSpawnPoint;
+                        gs.car.lastZPoint = gs.carArray[i].carTranslate.z;
+                    }
+            }
+            if (gs.tankMainPlayer.shoot && gs.bullet.needToResetBullet)
+            {
+                gs.tankMainPlayer.shoot = false;
+            }
         }
     }else if (timer == carSpawnTimer){
         //This timer makes cars spawn in proper timers
@@ -238,8 +284,8 @@ void onTimer(int timer){
             {                                              
                 gs.bullet.position.x -= gs.bullet.direction.x;
                 gs.bullet.position.y -= 0.03;
-                gs.bullet.Charging++;
                 gs.bullet.position.z -= gs.bullet.direction.z;
+                gs.bullet.Charging++;
                 gs.bullet.needToResetBullet = false;
                 if(gs.bullet.position.y <= -1){ // -1 on Y is when bomb reaches floor
                     gs.bullet.needToResetBullet = true;
