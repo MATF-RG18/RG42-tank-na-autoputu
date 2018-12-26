@@ -4,23 +4,29 @@ CFLAGS  = -g -std=c99 -Wall -Wextra -I/usr/X11R6/include -I/usr/pkg/include
 LDFLAGS = -L/usr/X11R6/lib -L/usr/pkg/lib
 LDLIBS  = -lglut -lGLU -lGL -lm
 
-$(PROGRAM): crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o image.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o image.o $(LDLIBS) 
+$(PROGRAM): crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o image.o mathFunctions.o drawInitFunctions.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM) crush_them.o drawFunctions.o callbackFunctions.o lightingFunctions.o image.o mathFunctions.o drawInitFunctions.o $(LDLIBS) 
 
-drawFunctions.o: drawFunctions.c callbackFunctions.h lightingFunctions.h image.h
+drawFunctions.o: drawFunctions.c 
 	$(CC) $(CFLAGS) -c $(LDFLAGS) drawFunctions.c $(LDLIBS)
 
-callbackFunctions.o: callbackFunctions.c drawFunctions.h lightingFunctions.h image.h
+callbackFunctions.o: callbackFunctions.c 
 	$(CC) $(CFLAGS) -c $(LDFLAGS) callbackFunctions.c $(LDLIBS)
 
-lightingFunctions.o: lightingFunctions.c drawFunctions.h callbackFunctions.h image.h
+lightingFunctions.o: lightingFunctions.c 
 	$(CC) $(CFLAGS) -c $(LDFLAGS) lightingFunctions.c $(LDLIBS)
 
-image.o: image.c lightingFunctions.h drawFunctions.h callbackFunctions.h 
+image.o: image.c
 	$(CC) $(CFLAGS) -c $(LDFLAGS) image.c $(LDLIBS)
 
-crush_them.o: crush_them.c lightingFunctions.h drawFunctions.h callbackFunctions.h image.h
+crush_them.o: crush_them.c 
 	$(CC) $(CFLAGS) -c $(LDFLAGS) crush_them.c $(LDLIBS)
+	
+drawInitFunctions.o: drawInitFunctions.c
+	$(CC) $(CFLAGS) -c $(LDFLAGS) drawInitFunctions.c $(LDLIBS)
+
+mathFunctions.o: mathFunctions.c 
+	$(CC) $(CFLAGS) -c $(LDFLAGS) mathFunctions.c $(LDLIBS)
 	
 .PHONY: beauty clean dist
 

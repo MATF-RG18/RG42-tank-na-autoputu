@@ -1,82 +1,88 @@
 #ifndef DRAWFUNCTIONS_H
 #define DRAWFUNCTIONS_H
-#include <GL/gl.h>
+
+#include <GL/glut.h>
 #include <stdbool.h>
+
 /************************************
-    Macros definitions start here
+    Macro definitions start here
 *************************************/
 
 #define MAX_CARS_ALLOWED 10
 #define NOT_USED_VAR(X) (void)(X)
-
-
+#define MAX_LEN 50
+#define MAX_FENCE_ALLOWED 45
 
 //Create game state.
 struct gameState gs;
 GLuint names[1]; // used for texture
+
 /************************************
-    Structs definitions start here
+    Structs declarations start here
 *************************************/
 
-//3 vectors struct
-struct Vector3f{
+struct Vector3f {
     float x;
     float y;
     float z;
 };
-struct Car{
+
+struct Car {
     float carSpeed;
     int setOfCarXPositionsAllowedValues[3];
     int ZSpawnPoint;
     int numOfCars;
     int timeCarSpawn;
     struct Vector3f carScale;
-    struct Vector3f carTranslate;
+    struct Vector3f carPosition;
     struct Vector3f carRotate;
     int showShield;
     float shieldOpacity;
-    int lastZPoint;
-    int lastCar;
+    long long lastZPoint;
 };
-struct Tank{
-    struct Vector3f tankTranslate;
+
+struct Tank {
+    struct Vector3f tankPosition;
     struct Vector3f tankScale;
-    struct Vector3f rotateTurret;
+    struct Vector3f turretRotate; //can be moved to turret struct if it gets made
     float tankSpeed;
     int prevDir;
     int currDir;
     bool shoot;
 };
-struct Road{
+
+struct Road {
     struct Vector3f roadScale;
     struct Vector3f roadRotation;
-    struct Vector3f roadTranslation;
+    struct Vector3f roadPosition;
 };
-struct Sky{
+
+struct Sky {
     struct Vector3f skyColor;
-    int dayTimer;
     int flag;
 };
-struct Sun{
+
+struct Sun {
     struct Vector3f sunRotate;
     struct Vector3f sunTranslate;
-    struct Vector3f lightCoef;
-    int quadrant;
-    float mod;
     struct Vector3f sunPosition;
     struct Vector3f lightDirection;
 };
 
-struct Bullet{
-    struct Vector3f position;
-    struct Vector3f direction;
-    struct Vector3f scale;
+struct Bullet {
+    struct Vector3f bulletPosition;
+    struct Vector3f bulletDirection;
+    struct Vector3f bulletScale;
     bool needToResetBullet;
     int Charging;
 };
 
-//Keeps info about whole game state
-struct gameState{
+struct Fence {
+    struct Vector3f fencePosition;
+    struct Vector3f fenceScale;
+};
+
+struct gameState {
     struct Car carArray[MAX_CARS_ALLOWED];
     struct Car car;
     struct Sun sun;
@@ -86,40 +92,39 @@ struct gameState{
     struct Road leftSideRoad, leftSideRoad2, leftSideRoad3;
     struct Tank tankMainPlayer;
     struct Bullet bullet;
+    struct Fence fenceLeftArray[MAX_FENCE_ALLOWED], fenceRightArray[MAX_FENCE_ALLOWED];
     int WindowWidth;
     int WindowHeight;
     int actionOnGoing;
     float cameraMovement;
     int numberOfCrushes;
-    float lightModifier;
     int lastMouseX;
-    bool leftMouseDown;
     bool gameover;
 };
 
-void init(void);
-void initRenderingObjects(void);
-void drawSquare(void);
-void drawRoad(const struct Road road);
-void drawCubeTank(const struct Tank tank);
-void drawCar(const struct Car cars);
-void drawSun(void);
-void tankInit(void);
-void roadInit(void);
-void skyInit(void);
-void carInit(void);
-void drawScore(void);
-void sunInit(void);
-void skyChangeFunction(void);
-void setTankTurretMatrix(void);
-void rightSideRoadInit(void);
+
+/************************************
+    Functionss declarations start here
+*************************************/
+
 void drawBullet(void);
-struct Vector3f getDirection(struct Vector3f a, struct Vector3f b);
-void leftSideRoadInit(void);
-void drawSideRoad(const struct Road road);
-bool collisionCheck(struct Vector3f a, struct Vector3f b, struct Vector3f asize, struct Vector3f bsize);
-struct Vector3f normalize(struct Vector3f);
-void drawEndGame(void);
-void drawSingleColorSquare(void);
-void bulletInit(void);
+
+void drawSquare(void);
+
+void drawRoad(struct Road road, bool texturesEnabled);
+
+void drawCubeTank(struct Tank tank);
+
+void drawCar(struct Car cars);
+
+void drawSun(void);
+
+void drawMessage(char string[MAX_LEN], int x, int y);
+
+void resetCar(int i);
+
+void skyChangeFunction(void);
+
+void drawFence(struct Fence fence);
+
 #endif

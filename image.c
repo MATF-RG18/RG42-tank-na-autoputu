@@ -7,99 +7,99 @@
 
 Image *image_init(int width, int height) {
 
-  Image *image;
+    Image *image;
 
-  assert(width >= 0 && height >= 0);
+    assert(width >= 0 && height >= 0);
 
-  image = (Image *) malloc(sizeof(Image));
-  assert(image != NULL);
+    image = (Image *) malloc(sizeof(Image));
+    assert(image != NULL);
 
-  image->width = width;
-  image->height = height;
-  if (width == 0 || height == 0)
-    image->pixels = NULL;
-  else {
-    image->pixels = (char *)malloc(3 * width * height * sizeof(char));
-    assert(image->pixels != NULL);
-  }
+    image->width = width;
+    image->height = height;
+    if (width == 0 || height == 0)
+        image->pixels = NULL;
+    else {
+        image->pixels = (char *) malloc(3 * width * height * sizeof(char));
+        assert(image->pixels != NULL);
+    }
 
-  return image;
+    return image;
 }
 
 void image_done(Image *image) {
-  free(image->pixels);
-  free(image);
+    free(image->pixels);
+    free(image);
 }
 
 void image_read(Image *image, char *filename) {
 
-  FILE *file;
-  BITMAPFILEHEADER bfh;
-  BITMAPINFOHEADER bih;
-  unsigned int i;
-  unsigned char r, g, b, a;
+    FILE *file;
+    BITMAPFILEHEADER bfh;
+    BITMAPINFOHEADER bih;
+    unsigned int i;
+    unsigned char r, g, b, a;
 
-  free(image->pixels);
-  image->pixels = NULL;
+    free(image->pixels);
+    image->pixels = NULL;
 
-  assert((file = fopen(filename, "rb")) != NULL);
+    assert((file = fopen(filename, "rb")) != NULL);
 
-  fread(&bfh.type, 2, 1, file);
-  fread(&bfh.size, 4, 1, file);
-  fread(&bfh.reserved1, 2, 1, file);
-  fread(&bfh.reserved2, 2, 1, file);
-  fread(&bfh.offsetbits, 4, 1, file);
+    fread(&bfh.type, 2, 1, file);
+    fread(&bfh.size, 4, 1, file);
+    fread(&bfh.reserved1, 2, 1, file);
+    fread(&bfh.reserved2, 2, 1, file);
+    fread(&bfh.offsetbits, 4, 1, file);
 
-  fread(&bih.size, 4, 1, file);
-  fread(&bih.width, 4, 1, file);
-  fread(&bih.height, 4, 1, file);
-  fread(&bih.planes, 2, 1, file);
-  fread(&bih.bitcount, 2, 1, file);
-  fread(&bih.compression, 4, 1, file);
-  fread(&bih.sizeimage, 4, 1, file);
-  fread(&bih.xpelspermeter, 4, 1, file);
-  fread(&bih.ypelspermeter, 4, 1, file);
-  fread(&bih.colorsused, 4, 1, file);
-  fread(&bih.colorsimportant, 4, 1, file);
+    fread(&bih.size, 4, 1, file);
+    fread(&bih.width, 4, 1, file);
+    fread(&bih.height, 4, 1, file);
+    fread(&bih.planes, 2, 1, file);
+    fread(&bih.bitcount, 2, 1, file);
+    fread(&bih.compression, 4, 1, file);
+    fread(&bih.sizeimage, 4, 1, file);
+    fread(&bih.xpelspermeter, 4, 1, file);
+    fread(&bih.ypelspermeter, 4, 1, file);
+    fread(&bih.colorsused, 4, 1, file);
+    fread(&bih.colorsimportant, 4, 1, file);
 
-  image->width = bih.width;
-  image->height = bih.height;
+    image->width = bih.width;
+    image->height = bih.height;
 
-  if (bih.bitcount == 24)
-    image->pixels = (char *)malloc(3 * bih.width * bih.height * sizeof(char));
-  else if (bih.bitcount == 32)
-    image->pixels = (char *)malloc(4 * bih.width * bih.height * sizeof(char));
-  else {
-    fprintf(stderr, "image_read(): Podrzane su samo slike koje po pikselu cuvaju 24 ili 32 bita podataka.\n");
-    exit(1);
-  }
-  assert(image->pixels != NULL);
-
-  if (bih.bitcount == 24)
-
-    for (i = 0; i < bih.width * bih.height; i++) {
-
-      fread(&b, sizeof(char), 1, file);
-      fread(&g, sizeof(char), 1, file);
-      fread(&r, sizeof(char), 1, file);
-
-      image->pixels[3 * i] = r;
-      image->pixels[3 * i + 1] = g;
-      image->pixels[3 * i + 2] = b;
+    if (bih.bitcount == 24)
+        image->pixels = (char *) malloc(3 * bih.width * bih.height * sizeof(char));
+    else if (bih.bitcount == 32)
+        image->pixels = (char *) malloc(4 * bih.width * bih.height * sizeof(char));
+    else {
+        fprintf(stderr, "image_read(): Only 24 or 32 bit pics are allowed.\n");
+        exit(1);
     }
-  else if (bih.bitcount == 32)
+    assert(image->pixels != NULL);
 
-    for (i = 0; i < bih.width * bih.height; i++) {
-      fread(&b, sizeof(char), 1, file);
-      fread(&g, sizeof(char), 1, file);
-      fread(&r, sizeof(char), 1, file);
-      fread(&a, sizeof(char), 1, file);
+    if (bih.bitcount == 24)
 
-      image->pixels[4 * i] = r;
-      image->pixels[4 * i + 1] = g;
-      image->pixels[4 * i + 2] = b;
-      image->pixels[4 * i + 3] = a;
-    }
+        for (i = 0; i < bih.width * bih.height; i++) {
 
-  fclose(file);
+            fread(&b, sizeof(char), 1, file);
+            fread(&g, sizeof(char), 1, file);
+            fread(&r, sizeof(char), 1, file);
+
+            image->pixels[3 * i] = r;
+            image->pixels[3 * i + 1] = g;
+            image->pixels[3 * i + 2] = b;
+        }
+    else if (bih.bitcount == 32)
+
+        for (i = 0; i < bih.width * bih.height; i++) {
+            fread(&b, sizeof(char), 1, file);
+            fread(&g, sizeof(char), 1, file);
+            fread(&r, sizeof(char), 1, file);
+            fread(&a, sizeof(char), 1, file);
+
+            image->pixels[4 * i] = r;
+            image->pixels[4 * i + 1] = g;
+            image->pixels[4 * i + 2] = b;
+            image->pixels[4 * i + 3] = a;
+        }
+
+    fclose(file);
 }
