@@ -73,10 +73,11 @@ void setBulletMatrix(void) {
     gs.bullet.bulletPosition.x = bulletMatrix[12];
     gs.bullet.bulletPosition.y = bulletMatrix[13];
     gs.bullet.bulletPosition.z = bulletMatrix[14];
-
-    gs.bullet.bulletDirection.x = (bulletMatrix[8] * 1.3f);
-    gs.bullet.bulletDirection.y = (bulletMatrix[9] * 1.3f);
-    gs.bullet.bulletDirection.z = (bulletMatrix[10] * 1.3f);
+    
+    gs.bullet.bulletDirection.x = (bulletMatrix[8]*1.3);
+    gs.bullet.bulletDirection.y = (bulletMatrix[9]*1.3);
+    gs.bullet.bulletDirection.z = (bulletMatrix[10]*1.3);
+    
 }
 
 void setSunMatrix(void) {
@@ -91,5 +92,10 @@ void setSunMatrix(void) {
     gs.sun.sunPosition.x = sunPositionMatrix[12];
     gs.sun.sunPosition.y = sunPositionMatrix[13];
     gs.sun.sunPosition.z = sunPositionMatrix[14];
+    
+    struct Vector3f direction = getDirection(gs.tankMainPlayer.tankPosition, gs.sun.sunPosition);
+    gs.sun.lightDirection.x = direction.x;
+    gs.sun.lightDirection.y = direction.y;
+    gs.sun.lightDirection.z = direction.z;
 }
 

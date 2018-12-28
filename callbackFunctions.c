@@ -57,8 +57,8 @@ void onDisplay(void) {
     glEnable(GL_LIGHTING);
 
     glDisable(GL_LIGHT0);
-    lightForSun();
-    drawSun();
+        lightForSun();
+        drawSun();
     glDisable(GL_LIGHT1);
     glEnable(GL_LIGHT0);
 
@@ -126,6 +126,18 @@ void onKeyboardInput(unsigned char key, int x, int y) {
             gs.tankMainPlayer.currDir = 1;
             gs.tankMainPlayer.prevDir = 0;
             break;
+        case 'f':
+        case 'F':
+            if(gs.actionOnGoing == false && gs.fullscreen == false){
+                glutFullScreen();
+                glutPostRedisplay();
+                gs.fullscreen = true;
+            }else if(gs.actionOnGoing == false && gs.fullscreen == true){
+                glutReshapeWindow(1300, 700);
+                glutPostRedisplay();
+                gs.fullscreen = false;
+            }
+            break;
         default:
             break;
     }
@@ -190,7 +202,7 @@ void onTimer(int timer) {
         skyChangeFunction();
         // this timer moves cars, checks collisions with tank/bomb and re spawns cars.
         if (gs.actionOnGoing) {
-            if (gs.tankMainPlayer.shoot) {
+            if (gs.tankMainPlayer.shoot) { // same comment as one in tankMovementTimer
                 gs.bullet.bulletPosition.x -= gs.bullet.bulletDirection.x;
                 gs.bullet.bulletPosition.y -= 0.03f;
                 gs.bullet.bulletPosition.z -= gs.bullet.bulletDirection.z;
@@ -231,7 +243,7 @@ void onTimer(int timer) {
                     }
                 }
                 gs.carArray[i].carPosition.z += 1;
-                if (gs.carArray[i].carPosition.z - 10 >= gs.tankMainPlayer.tankPosition.z + 10) {
+                if (gs.carArray[i].carPosition.z - 10 >= gs.tankMainPlayer.tankPosition.z + 10) { // car is not crushed and it moved behind tank
                     if (gs.numberOfCrushes >= 10) {
                         if (gs.carArray[i].shieldOpacity < 1) {
                             gs.carArray[i].shieldOpacity += 0.5f;
@@ -241,8 +253,7 @@ void onTimer(int timer) {
                     resetCar(i);
                 } else if (collisionCheck(gs.tankMainPlayer.tankPosition, gs.carArray[i].carPosition,
                                           gs.tankMainPlayer.tankScale, gs.carArray[i].carScale)) {
-                    if (gs.carArray[i].showShield == 1 && gs.carArray[i].shieldOpacity ==
-                                                          1) { // If there is collision with car with full shield. Game over.
+                    if (gs.carArray[i].showShield == 1 && gs.carArray[i].shieldOpacity == 1) { // If there is collision with car with full shield. Game over.
                         gs.gameover = true;
                         gs.actionOnGoing = 0;
                     } else {
@@ -263,6 +274,8 @@ void onTimer(int timer) {
         gs.car.numOfCars++;
     } else if (timer == tankMovementTimer) {
         //this timer moves tank left right on keyboard press, keeps tank moving forward and makes road infinite length
+        //reason to have shoot here as well as in carSpeedTimer
+        // is that collision can be missed in one timer only..
         if (gs.actionOnGoing) {
             if (gs.tankMainPlayer.shoot) {
                 gs.bullet.bulletPosition.x -= gs.bullet.bulletDirection.x;

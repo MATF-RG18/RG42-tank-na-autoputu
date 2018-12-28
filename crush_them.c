@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     glutInitWindowPosition(gs.WindowWidth / 2, gs.WindowHeight / 2);
 
     glutCreateWindow("Crush them!");
-    //glutFullScreen();
+    
 
     //callback functions
     glutDisplayFunc(onDisplay);

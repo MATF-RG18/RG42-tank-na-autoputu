@@ -12,11 +12,6 @@ void light(){
         setSunMatrix();
     glPopMatrix();
 
-    struct Vector3f direction = getDirection(gs.tankMainPlayer.tankPosition, gs.sun.sunPosition);
-    gs.sun.lightDirection.x = direction.x;
-    gs.sun.lightDirection.y = direction.y;
-    gs.sun.lightDirection.z = direction.z;
-
     GLfloat light_position[] = {gs.sun.lightDirection.x, gs.sun.lightDirection.y, gs.sun.lightDirection.z, 0};
     GLfloat light_ambient[] = {.3f, .3f, .3f, 1};
     GLfloat light_diffuse[] = {.8f, .8f, .8f, 1};
@@ -39,11 +34,6 @@ void lightForSun(){
     glLoadIdentity();
         setSunMatrix();
     glPopMatrix();
-
-    struct Vector3f direction = getDirection(gs.tankMainPlayer.tankPosition, gs.sun.sunPosition);
-    gs.sun.lightDirection.x = direction.x;
-    gs.sun.lightDirection.y = direction.y;
-    gs.sun.lightDirection.z = direction.z;
 
     //Light coeffs
     GLfloat light_position[] = {-gs.sun.lightDirection.x, -gs.sun.lightDirection.y, -gs.sun.lightDirection.z, 0};

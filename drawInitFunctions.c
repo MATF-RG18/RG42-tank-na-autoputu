@@ -171,4 +171,5 @@ void initRenderingObjects(){
     gs.cameraMovement = 0;
     gs.numberOfCrushes = 0;
     gs.gameover = false;
+    gs.fullscreen = false;
 }

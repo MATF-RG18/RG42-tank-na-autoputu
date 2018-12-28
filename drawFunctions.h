@@ -99,6 +99,7 @@ struct gameState {
     float cameraMovement;
     int numberOfCrushes;
     int lastMouseX;
+    bool fullscreen;
     bool gameover;
 };
 
