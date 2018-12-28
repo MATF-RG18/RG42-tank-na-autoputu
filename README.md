@@ -10,6 +10,8 @@ Computer Graphics university project done in C/OpenGL/Glut
 
 - Press/Hold d or D to turn right.  
 
+- Press f or F for full screen. Works only when game is not active.
+
 - Left mouse click to shoot.
 
 - Crush as many cars as you can!
